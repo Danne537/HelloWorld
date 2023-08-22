@@ -1,0 +1,44 @@
+This means "show everything that is reachable from either one, but exclude anything that is reachable from both of them".
+
+Please note that these range notation can be used with both gitk and git log.
+
+After inspecting what Bob did, if there is nothing urgent, Alice may decide to continue working without pulling from Bob. If Bob’s history does have something Alice would immediately need, Alice may choose to stash her work-in-progress first, do a pull, and then finally unstash her work-in-progress on top of the resulting history.
+
+When you are working in a small closely knit group, it is not unusual to interact with the same repository over and over again. By defining remote repository shorthand, you can make it easier:
+
+alice$ git remote add bob /home/bob/myrepo
+With this, Alice can perform the first part of the pull operation alone using the git fetch command without merging them with her own branch, using:
+
+alice$ git fetch bob
+Unlike the longhand form, when Alice fetches from Bob using a remote repository shorthand set up with git remote, what was fetched is stored in a remote-tracking branch, in this case bob/master. So after this:
+
+alice$ git log -p master..bob/master
+shows a list of all the changes that Bob made since he branched from Alice’s master branch.
+
+After examining those changes, Alice could merge the changes into her master branch:
+
+alice$ git merge bob/master
+This merge can also be done by pulling from her own remote-tracking branch, like this:
+
+alice$ git pull . remotes/bob/master
+Note that git pull always merges into the current branch, regardless of what else is given on the command line.
+
+Later, Bob can update his repo with Alice’s latest changes using
+
+bob$ git pull
+Note that he doesn’t need to give the path to Alice’s repository; when Bob cloned Alice’s repository, Git stored the location of her repository in the repository configuration, and that location is used for pulls:
+
+bob$ git config --get remote.origin.url
+/home/alice/project
+(The complete configuration created by git clone is visible using git config -l, and the git-config[1] man page explains the meaning of each option.)
+
+Git also keeps a pristine copy of Alice’s master branch under the name origin/master:
+
+bob$ git branch -r
+  origin/master
+If Bob later decides to work from a different host, he can still perform clones and pulls using the ssh protocol:
+
+bob$ git clone alice.org:/home/alice/project myrepo
+Alternatively, Git has a native protocol, or can use http; see git-pull[1] for details.
+
+Git can also be used in a CVS-like mode, with a central repository that various users push changes to; see git-push[1] and gitcvs-migration[7].
